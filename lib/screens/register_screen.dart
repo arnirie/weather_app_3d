@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_3d/screens/current_location_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -71,11 +73,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> register() async {
     var url = Uri.parse('http://132.168.13.238/flutter_3d_php/register.php');
-    var response = await http.post(url, body: {
+    await http.post(url, body: {
       'username': _usernameController.text,
       'province': _provinceController.text
+    }).then((response) {
+      Map decodedResponse = jsonDecode(response.body);
+      print(decodedResponse['message']);
+      if (decodedResponse['status'] == 'ok') {
+        //navigate to another screen
+        Navigator.push(context,
+            CupertinoPageRoute(builder: (_) => const CurrentLocationScreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(decodedResponse['message'])),
+        );
+      }
+    }).catchError((error) {
+      print(error);
     });
-    print(response.body);
   }
 
   @override
